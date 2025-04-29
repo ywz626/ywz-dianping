@@ -1,6 +1,7 @@
 package com.ywz.config;
 
 import com.ywz.utils.LoginInterceptor;
+import com.ywz.utils.LoginRefreshInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,9 +23,12 @@ public class MVCConfig implements WebMvcConfigurer {
 
     public void addInterceptors(InterceptorRegistry registry) {
         //添加拦截器
-        registry.addInterceptor(new LoginInterceptor(stringRedisTemplate))
+        registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns("/user/code", "/user/login", "/shop/**", "/voucher/**","blog/hot",
                         "shop-type/**", "/upload/**")
+                .order(2);
+
+        registry.addInterceptor(new LoginRefreshInterceptor(stringRedisTemplate))
                 .order(1);
     }
 }
