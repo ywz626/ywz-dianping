@@ -10,6 +10,7 @@ import com.ywz.service.IBlogService;
 import com.ywz.service.IUserService;
 import com.ywz.utils.SystemConstants;
 import com.ywz.utils.UserHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -23,6 +24,7 @@ import java.util.List;
  * @author 虎哥
  * @since 2021-12-22
  */
+@Slf4j
 @RestController
 @RequestMapping("/blog")
 public class BlogController {
@@ -74,6 +76,7 @@ public class BlogController {
         // 查询用户
         records.forEach(blog ->{
             Long userId = blog.getUserId();
+            log.info("userId: {}", userId);
             User user = userService.getById(userId);
             blog.setName(user.getNickName());
             blog.setIcon(user.getIcon());
