@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * @author 于汶泽
- * @Description: TODO
+ * @Description: 拦截所有请求，刷新redis的保存时间
  * @DateTime: 2025/4/29 21:15
  */
 public class LoginRefreshInterceptor implements HandlerInterceptor {
