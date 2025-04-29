@@ -10,7 +10,7 @@ import javax.annotation.Resource;
 
 /**
  * @author 于汶泽
- * @Description: TODO
+ * @Description: 用户登录拦截器的配置类
  * @DateTime: 2025/4/29 15:23
  */
 @Configuration
