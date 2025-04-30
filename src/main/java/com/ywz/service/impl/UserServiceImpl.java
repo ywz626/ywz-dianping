@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import java.util.HashMap;
@@ -52,6 +53,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 模拟发送手机验证码
+     *
      * @param phone
      * @param session
      * @return
@@ -74,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.info("发送验证码成功，验证码为：{}", code);
 
         //3.保存验证码到Redis
-        stringRedisTemplate.opsForValue().set(RedisConstants.LOGIN_CODE_KEY + phone, code,RedisConstants.LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(RedisConstants.LOGIN_CODE_KEY + phone, code, RedisConstants.LOGIN_CODE_TTL, TimeUnit.MINUTES);
         return Result.ok();
     }
 
@@ -120,9 +122,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((field, value) -> value.toString()));
         //将map存入redis中
-        stringRedisTemplate.opsForHash().putAll(RedisConstants.LOGIN_USER_KEY + token,userMap);
+        stringRedisTemplate.opsForHash().putAll(RedisConstants.LOGIN_USER_KEY + token, userMap);
         //设置token的过期时间
-        stringRedisTemplate.expire(RedisConstants.LOGIN_USER_KEY+token,RedisConstants.LOGIN_USER_TTL, TimeUnit.SECONDS);
+        stringRedisTemplate.expire(RedisConstants.LOGIN_USER_KEY + token, RedisConstants.LOGIN_USER_TTL, TimeUnit.SECONDS);
 //        session.setAttribute("user", user);
         return Result.ok(token);
     }
@@ -142,15 +144,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result logOut(HttpSession session) {
+    public Result logOut(HttpServletRequest request) {
         try {
-            User user =(User) session.getAttribute("user");
-            if (user != null) {
-                session.removeAttribute("user");
-                userMapper.deleteById(user.getId());
+            String token = request.getHeader("authorization");
+            Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(RedisConstants.LOGIN_USER_KEY + token);
+            UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
+            if (userDTO.getId() != null) {
+//                session.removeAttribute("user");
+                userMapper.deleteById(userDTO.getId());
+                //删除redis中的用户信息
+                stringRedisTemplate.delete(RedisConstants.LOGIN_USER_KEY + token);
             }
             UserHolder.removeUser();
-            session.removeAttribute("phone");
             return Result.ok();
         } catch (Exception e) {
             return Result.fail("登出失败");

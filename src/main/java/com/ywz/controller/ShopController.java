@@ -7,6 +7,8 @@ import com.ywz.dto.Result;
 import com.ywz.entity.Shop;
 import com.ywz.service.IShopService;
 import com.ywz.utils.SystemConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -21,7 +23,9 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping("/shop")
+@Slf4j
 public class ShopController {
+
 
     @Resource
     public IShopService shopService;
@@ -33,7 +37,17 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
-        return Result.ok(shopService.getById(id));
+        Shop shop = shopService.getByRedisById(id);
+        if (shop.getId()==null) {
+            log.info("redis中没有商铺信息，查询数据库");
+            shop = shopService.getById(id);
+            if(shop.getId()==null) {
+                log.info("数据库中没有商铺信息");
+                return Result.fail("商铺不存在");
+            }
+            shopService.saveByRedis(shop);
+        }
+        return Result.ok(shop);
     }
 
     /**
