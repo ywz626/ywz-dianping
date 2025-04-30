@@ -37,17 +37,7 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
-        Shop shop = shopService.getByRedisById(id);
-        if (shop.getId()==null) {
-            log.info("redis中没有商铺信息，查询数据库");
-            shop = shopService.getById(id);
-            if(shop.getId()==null) {
-                log.info("数据库中没有商铺信息");
-                return Result.fail("商铺不存在");
-            }
-            shopService.saveByRedis(shop);
-        }
-        return Result.ok(shop);
+        return shopService.getByRedisById(id);
     }
 
     /**
@@ -71,8 +61,7 @@ public class ShopController {
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
-        shopService.updateById(shop);
-        return Result.ok();
+        return shopService.updateAndRedis(shop);
     }
 
     /**

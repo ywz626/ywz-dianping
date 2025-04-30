@@ -1,5 +1,6 @@
 package com.ywz.service;
 
+import com.ywz.dto.Result;
 import com.ywz.entity.Shop;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,7 +14,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IShopService extends IService<Shop> {
 
-    Shop getByRedisById(Long id);
+    Result getByRedisById(Long id);
 
-    void saveByRedis(Shop shop);
+
+    Result updateAndRedis(Shop shop);
 }
