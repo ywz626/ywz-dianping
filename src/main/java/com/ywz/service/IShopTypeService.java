@@ -15,5 +15,7 @@ import java.util.List;
  */
 public interface IShopTypeService extends IService<ShopType> {
 
-    List<ShopType> queryByRedis();
+    List<ShopType> queryByRedisByString();
+
+    List<ShopType> queryByRedisByList();
 }

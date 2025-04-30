@@ -27,7 +27,10 @@ public class ShopTypeController {
 
     @GetMapping("list")
     public Result queryTypeList() {
-        List<ShopType> typeList = typeService.queryByRedis();
+        //使用字符串的方法进行redis缓存
+//        List<ShopType> typeList = typeService.queryByRedisByString();
+        //使用List的方法进行redis缓存
+        List<ShopType> typeList = typeService.queryByRedisByList();
         return Result.ok(typeList);
     }
 }
