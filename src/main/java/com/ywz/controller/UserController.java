@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -48,8 +49,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        Result result = userService.login(loginForm, session);
-        return result;
+        return userService.login(loginForm, session);
     }
 
     /**
@@ -57,8 +57,8 @@ public class UserController {
      * @return 无
      */
     @PostMapping("/logout")
-    public Result logout(HttpSession session){
-        return userService.logOut(session);
+    public Result logout(HttpServletRequest request){
+        return userService.logOut(request);
     }
 
     @GetMapping("/me")

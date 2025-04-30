@@ -5,6 +5,7 @@ import com.ywz.dto.LoginFormDTO;
 import com.ywz.dto.Result;
 import com.ywz.entity.User;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -21,5 +22,5 @@ public interface IUserService extends IService<User> {
 
     Result login(LoginFormDTO loginForm, HttpSession session);
 
-    Result logOut(HttpSession session);
+    Result logOut(HttpServletRequest request);
 }

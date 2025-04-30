@@ -2,7 +2,6 @@ package com.ywz.utils;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.ywz.dto.UserDTO;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
