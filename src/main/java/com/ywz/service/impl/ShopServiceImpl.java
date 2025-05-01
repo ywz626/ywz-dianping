@@ -2,6 +2,7 @@ package com.ywz.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.BooleanUtil;
 import com.ywz.dto.Result;
 import com.ywz.entity.Shop;
 import com.ywz.mapper.ShopMapper;
@@ -48,6 +49,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 return Result.ok(shop);
             }
             log.info("redis中没有商铺信息，查询数据库");
+            if (!tryLock(RedisConstants.LOCK_SHOP_KEY+id)) {
+                log.info("获取锁失败");
+                Thread.sleep(50);
+                getByRedisById(id);
+            }
+            log.info("获取锁成功");
             shop = getById(id);
             if(shop == null) {
                 //如果数据库中没有商铺信息，则将null存入redis
@@ -70,9 +77,21 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         } catch (Exception e) {
             log.error("{}从redis中获取商铺信息时出错", e.getMessage());
             throw new RuntimeException(e);
+        }finally {
+            //释放锁
+            deleteLock(RedisConstants.LOCK_SHOP_KEY+id);
+            log.info("释放锁成功");
         }
     }
 
+    private boolean tryLock(String key){
+        Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 10, TimeUnit.SECONDS);
+        return BooleanUtil.isTrue(flag);
+    }
+
+    private boolean deleteLock(String key){
+        return BooleanUtil.isTrue(stringRedisTemplate.delete(key));
+    }
 
 
     @Override
