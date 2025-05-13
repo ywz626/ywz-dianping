@@ -53,6 +53,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
         //5.扣减库存
         seckillVoucherService.update().setSql("stock = stock -1")
+                .gt("stock",0)
                 .eq("voucher_id", voucherId).update();
         //6.创建订单
         VoucherOrder order = new VoucherOrder();
