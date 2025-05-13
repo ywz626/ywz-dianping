@@ -9,11 +9,13 @@ import com.ywz.mapper.ShopMapper;
 import com.ywz.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywz.utils.RedisConstants;
+import com.ywz.utils.RedisData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +35,25 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+
     @Override
     public Result getByRedisById(Long id) {
+        Result result = new Result();
+
+        // 用互斥锁的方法解决缓存击穿问题
+        result = queryWithPassThrough(id);
+
+        // 用逻辑过期的方法解决缓存击穿问题
+        return result;
+    }
+
+    private Shop queryWithPassThroughByLogic(Long id){
+        String key = RedisConstants.CACHE_SHOP_KEY + id;
+        //TODO: 用逻辑过期的方法解决缓存击穿问题
+        return null;
+    }
+
+    private Result queryWithPassThrough(Long id) {
         String key = RedisConstants.CACHE_SHOP_KEY + id;
         try {
             Object o = stringRedisTemplate.opsForHash().get(key, "id");
@@ -83,6 +102,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             log.info("释放锁成功");
         }
     }
+
 
     private boolean tryLock(String key){
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 10, TimeUnit.SECONDS);
