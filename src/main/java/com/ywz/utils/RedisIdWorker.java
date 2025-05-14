@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * @author 于汶泽
- * @Description: TODO
+ * @Description: 在redis中生成序列号或自增，并返回时间戳和序列号的组合
  * @DateTime: 2025/5/12 19:14
  */
 @Component

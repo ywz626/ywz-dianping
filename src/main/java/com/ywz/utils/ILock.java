@@ -8,5 +8,5 @@ package com.ywz.utils;
 public interface ILock {
     boolean tryLock(Long timeOut);
 
-    boolean unLock();
+    void unLock();
 }
