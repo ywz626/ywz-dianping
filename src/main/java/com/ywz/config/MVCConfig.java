@@ -25,7 +25,7 @@ public class MVCConfig implements WebMvcConfigurer {
         //添加拦截器
         registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns("/user/code", "/user/login", "/shop/**", "/voucher/**","blog/hot",
-                        "shop-type/**", "/upload/**","voucher/**")
+                        "shop-type/**", "/upload/**","voucher/**","/voucher-order/**")
                 .order(2);
 
         registry.addInterceptor(new LoginRefreshInterceptor(stringRedisTemplate))

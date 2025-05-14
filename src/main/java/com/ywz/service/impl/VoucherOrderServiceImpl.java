@@ -11,8 +11,10 @@ import com.ywz.service.ISeckillVoucherService;
 import com.ywz.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywz.utils.RedisIdWorker;
+import com.ywz.utils.RedisLock;
 import com.ywz.utils.UserHolder;
 import org.springframework.aop.framework.AopContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Resource
     private RedisIdWorker redisIdWorker;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     @Override
     public Result seckillVoucher(Long voucherId) {
         //1.查询优惠卷信息
@@ -54,9 +59,20 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足！");
         }
         Long id = UserHolder.getUser().getId();
-        synchronized (id.toString().intern()) {
+        //尝试获取锁
+        RedisLock redisLock = new RedisLock("order" + id, stringRedisTemplate);
+
+        boolean lockStatus = redisLock.tryLock(10L);
+        if(!lockStatus){
+            return Result.fail("同一用户只能买一件");
+        }
+        try {
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createOrder(voucherId,secVoucher);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            redisLock.unLock();
         }
     }
 
