@@ -1,18 +1,16 @@
 package com.ywz.service.impl;
 
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
-import com.ywz.controller.VoucherOrderController;
 import com.ywz.dto.Result;
 import com.ywz.entity.SeckillVoucher;
-import com.ywz.entity.Voucher;
 import com.ywz.entity.VoucherOrder;
 import com.ywz.mapper.VoucherOrderMapper;
 import com.ywz.service.ISeckillVoucherService;
 import com.ywz.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywz.utils.RedisIdWorker;
-import com.ywz.utils.RedisLock;
 import com.ywz.utils.UserHolder;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -41,6 +39,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private RedissonClient redisson;
+
     @Override
     public Result seckillVoucher(Long voucherId) {
         //1.查询优惠卷信息
@@ -58,11 +59,11 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if (secVoucher.getStock() <= 0) {
             return Result.fail("库存不足！");
         }
-        Long id = UserHolder.getUser().getId();
+        Long userId = UserHolder.getUser().getId();
         //尝试获取锁
-        RedisLock redisLock = new RedisLock("order" + id, stringRedisTemplate);
-
-        boolean lockStatus = redisLock.tryLock(10L);
+//        RedisLock redisLock = new RedisLock("order:" + userId, stringRedisTemplate);
+        RLock redisLock = redisson.getLock("lock:order:" + userId);
+        boolean lockStatus = redisLock.tryLock();
         if(!lockStatus){
             return Result.fail("同一用户只能买一件");
         }
@@ -72,7 +73,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         } finally {
-            redisLock.unLock();
+            redisLock.unlock();
         }
     }
 
