@@ -81,6 +81,7 @@ public class Voucher implements Serializable {
     /**
      * 生效时间
      */
+
     @TableField(exist = false)
     private LocalDateTime beginTime;
 

@@ -23,4 +23,6 @@ public interface IUserService extends IService<User> {
     Result login(LoginFormDTO loginForm, HttpSession session);
 
     Result logOut(HttpServletRequest request);
+
+    User createUser(String phone);
 }

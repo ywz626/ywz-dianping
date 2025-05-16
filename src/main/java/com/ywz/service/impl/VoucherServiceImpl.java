@@ -7,6 +7,7 @@ import com.ywz.mapper.VoucherMapper;
 import com.ywz.entity.SeckillVoucher;
 import com.ywz.service.ISeckillVoucherService;
 import com.ywz.service.IVoucherService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,8 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
 
     @Resource
     private ISeckillVoucherService seckillVoucherService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Result queryVoucherOfShop(Long shopId) {
@@ -47,5 +50,7 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         seckillVoucher.setBeginTime(voucher.getBeginTime());
         seckillVoucher.setEndTime(voucher.getEndTime());
         seckillVoucherService.save(seckillVoucher);
+        // 将秒杀信息存到redis中
+        stringRedisTemplate.opsForValue().set("seckill:stock:"+voucher.getId(), voucher.getStock()+"");
     }
 }

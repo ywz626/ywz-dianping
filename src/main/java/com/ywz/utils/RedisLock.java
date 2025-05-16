@@ -2,6 +2,7 @@ package com.ywz.utils;
 
 import cn.hutool.core.lang.UUID;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
