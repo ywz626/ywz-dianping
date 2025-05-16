@@ -135,7 +135,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param phone 手机号
      * @return User
      */
-    private User createUser(String phone) {
+    public User createUser(String phone) {
         User user = new User();
         user.setPhone(phone);
         user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(4));
