@@ -30,6 +30,7 @@ public class UploadController {
             log.debug("文件上传成功，{}", fileName);
             return Result.ok(fileName);
         } catch (IOException e) {
+            log.info("hahaha");
             throw new RuntimeException("文件上传失败", e);
         }
     }

@@ -151,7 +151,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
             if (userDTO.getId() != null) {
 //                session.removeAttribute("user");
-                userMapper.deleteById(userDTO.getId());
                 //删除redis中的用户信息
                 stringRedisTemplate.delete(RedisConstants.LOGIN_USER_KEY + token);
             }
