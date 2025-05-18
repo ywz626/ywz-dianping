@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywz.dto.Result;
 import com.ywz.dto.UserDTO;
 import com.ywz.entity.Blog;
-import com.ywz.entity.User;
 import com.ywz.service.IBlogService;
-import com.ywz.service.IUserService;
 import com.ywz.utils.SystemConstants;
 import com.ywz.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
+
 @Slf4j
 @RestController
 @RequestMapping("/blog")
@@ -76,5 +67,10 @@ public class BlogController {
         Page<Blog> page = blogService.query().eq("user_id", userId).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         List<Blog> records = page.getRecords();
         return Result.ok(records);
+    }
+
+    @GetMapping("/of/follow")
+    public Result queryBlogForFollow(@RequestParam("lastId") Long max,@RequestParam(value = "offset",defaultValue = "0") Integer offset){
+        return blogService.queryBlogForFollow(max,offset);
     }
 }
