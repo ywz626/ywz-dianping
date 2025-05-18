@@ -25,7 +25,7 @@ public class LoginRefreshInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("authorization");
-
+        UserHolder.removeUser();
         if (token == null) {
             return true;
         }

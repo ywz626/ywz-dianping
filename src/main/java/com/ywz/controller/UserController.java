@@ -1,9 +1,11 @@
 package com.ywz.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.ywz.dto.LoginFormDTO;
 import com.ywz.dto.Result;
 import com.ywz.dto.UserDTO;
+import com.ywz.entity.User;
 import com.ywz.entity.UserInfo;
 import com.ywz.service.IUserInfoService;
 import com.ywz.service.IUserService;
@@ -81,4 +83,15 @@ public class UserController {
         // 返回
         return Result.ok(info);
     }
+
+    @GetMapping("/{id}")
+    public Result queryById(@PathVariable("id") Long userId){
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.ok();
+        }
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        return Result.ok(userDTO);
+    }
+
 }
