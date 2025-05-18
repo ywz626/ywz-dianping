@@ -147,9 +147,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result logOut(HttpServletRequest request) {
         try {
             String token = request.getHeader("authorization");
-            Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(RedisConstants.LOGIN_USER_KEY + token);
-            UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-            if (userDTO.getId() != null) {
+            log.info("token:{}",token);
+            UserDTO user = UserHolder.getUser();
+//            Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(RedisConstants.LOGIN_USER_KEY + token);
+//            UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
+            if (user.getId() != null) {
 //                session.removeAttribute("user");
                 //删除redis中的用户信息
                 stringRedisTemplate.delete(RedisConstants.LOGIN_USER_KEY + token);
