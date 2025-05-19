@@ -171,6 +171,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         String key = RedisConstants.FEED_KEY + uid;
         Set<ZSetOperations.TypedTuple<String>> typedTuples = stringRedisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, max, offset, 3);
         // 解析 blogid ，mintime ，offset
+        if (typedTuples.isEmpty()){
+            return Result.ok(Collections.emptyList());
+        }
         ArrayList<Long> ids = new ArrayList<>(typedTuples.size());
         long minTime = 0L;
         int os = 1;

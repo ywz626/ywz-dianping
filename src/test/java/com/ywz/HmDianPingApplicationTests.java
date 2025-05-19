@@ -66,7 +66,7 @@ class HmDianPingApplicationTests {
         List<Shop> shops = shopService.list();
         for (Shop shop : shops) {
             String key = RedisConstants.SHOP_GEO_KEY + shop.getTypeId();
-            Point point = new Point(shop.getX().intValue(), shop.getY().intValue());
+            Point point = new Point(shop.getX(), shop.getY());
             stringRedisTemplate.opsForGeo().add(key,point,shop.getId().toString());
         }
     }
