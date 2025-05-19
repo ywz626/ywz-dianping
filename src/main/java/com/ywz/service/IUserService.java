@@ -25,4 +25,8 @@ public interface IUserService extends IService<User> {
     Result logOut(HttpServletRequest request);
 
     User createUser(String phone);
+
+    Result sign();
+
+    Result signDays();
 }
