@@ -14,7 +14,9 @@ import com.ywz.service.IUserService;
 import com.ywz.utils.RedisConstants;
 import com.ywz.utils.RegexUtils;
 import com.ywz.utils.UserHolder;
+import javafx.scene.input.DataFormat;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -141,6 +147,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(4));
         userMapper.insert(user);
         return user;
+    }
+
+    @Override
+    public Result sign() {
+        String key = getSignKey();
+        // 获取今天的日期
+        int dayOfMonth = LocalDateTime.now().getDayOfMonth();
+        stringRedisTemplate.opsForValue().setBit(key,dayOfMonth,true);
+        return Result.ok();
+    }
+
+    public String getSignKey(){
+        // key 为前缀加用户id加年和月
+        Long uid = UserHolder.getUser().getId();
+        LocalDateTime now = LocalDateTime.now();
+        String time = now.format(DateTimeFormatter.ofPattern("yyyy:MM"));
+        return RedisConstants.USER_SIGN_KEY + uid + ":" + time;
+    }
+
+
+    @Override
+    public Result signDays() {
+        String key = getSignKey();
+        // 获取今天的日期
+        LocalDateTime now = LocalDateTime.now();
+        int dayOfMonth = now.getDayOfMonth();
+        int count = 0;
+
+        while(true){
+            if(Boolean.TRUE.equals(stringRedisTemplate.opsForValue().getBit(key, dayOfMonth))) {
+                count++;
+            }else if(dayOfMonth != now.getDayOfMonth()){
+                break;
+            }
+        }
+        return Result.ok(count);
     }
 
     @Override

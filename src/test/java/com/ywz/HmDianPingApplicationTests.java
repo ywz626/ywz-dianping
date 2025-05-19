@@ -9,6 +9,7 @@ import com.ywz.entity.User;
 import com.ywz.service.IShopService;
 import com.ywz.service.IUserService;
 import com.ywz.utils.RedisConstants;
+import com.ywz.utils.UserHolder;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.geo.Point;
@@ -18,6 +19,8 @@ import javax.annotation.Resource;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,5 +72,15 @@ class HmDianPingApplicationTests {
             Point point = new Point(shop.getX(), shop.getY());
             stringRedisTemplate.opsForGeo().add(key,point,shop.getId().toString());
         }
+    }
+
+    // 补签
+    @Test
+    public void sign(){
+        long uid = 1010L;
+        LocalDateTime now = LocalDateTime.now();
+        String time = now.format(DateTimeFormatter.ofPattern("yyyy:MM"));
+        String key = RedisConstants.USER_SIGN_KEY + uid + ":" + time;
+        stringRedisTemplate.opsForValue().setBit(key,19,true);
     }
 }
