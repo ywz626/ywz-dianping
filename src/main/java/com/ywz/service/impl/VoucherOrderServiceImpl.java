@@ -55,14 +55,18 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         redisScript.setResultType(Long.class);
     }
 
-    private BlockingQueue<VoucherOrder> orderTasks = new ArrayBlockingQueue<VoucherOrder>(1024 * 1024);
+    // 阻塞队列
+    private final BlockingQueue<VoucherOrder> orderTasks = new ArrayBlockingQueue<VoucherOrder>(1024 * 1024);
+    // 线程池
     private static final ExecutorService SECKILL_EXECUTOR = Executors.newSingleThreadExecutor();
 
+    // 初始化
     @PostConstruct
     public void init() {
         SECKILL_EXECUTOR.submit(new VoucherOrderTask());
     }
 
+    // 阻塞队列实现异步秒杀
     private class VoucherOrderTask implements Runnable {
         @Override
         public void run() {

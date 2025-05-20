@@ -87,6 +87,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             shop = getById(id);
             if (shop == null) {
                 //如果数据库中没有商铺信息，则将null存入redis
+                // 解决缓存穿透问题的方案
                 stringRedisTemplate.opsForHash().put(key, "id", "null");
                 stringRedisTemplate.expire(key, RedisConstants.CACHE_NULL_TTL, TimeUnit.MINUTES);
                 return Result.fail("商铺不存在");
