@@ -14,10 +14,7 @@ import com.ywz.service.IUserService;
 import com.ywz.utils.RedisConstants;
 import com.ywz.utils.RegexUtils;
 import com.ywz.utils.UserHolder;
-import javafx.scene.input.DataFormat;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.connection.BitFieldSubCommands;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -134,6 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param phone 手机号
      * @return User
      */
+    @Override
     public User createUser(String phone) {
         User user = new User();
         user.setPhone(phone);

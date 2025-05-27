@@ -147,16 +147,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 GeoReference.fromCoordinate(x, y),
                 new Distance(5000),
                 RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeDistance().limit(end));
-        if (search == null) {
-            return Result.ok(Collections.emptyList());
-        }
         List<GeoResult<RedisGeoCommands.GeoLocation<String>>> list = search.getContent();
         if (list.isEmpty()){
             log.error("list为空");
-            return Result.ok(Collections.emptyList());
-        }
-        if(list.size() <= from){
-            return Result.ok(Collections.emptyList());
         }
         ArrayList<Long> ids = new ArrayList<>(list.size());
         HashMap<String, Distance> distanceMap = new HashMap<>();

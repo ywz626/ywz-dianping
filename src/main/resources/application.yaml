@@ -2,4 +2,4 @@ spring:
   config:
     name: ywz
   profiles:
-    active: dev
+    active: prod
