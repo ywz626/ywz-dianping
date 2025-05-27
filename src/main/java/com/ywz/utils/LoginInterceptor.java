@@ -24,8 +24,8 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         UserDTO user = UserHolder.getUser();
         if (user == null) {
-            response.setStatus(400);
-            log.error("？？？？？");
+            response.setStatus(401);
+            log.error("用户未登录");
             return false;
         }
         log.info("用户姓名：{}",user.getNickName());
