@@ -32,6 +32,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
+/**
+ * @author ywz
+ */
 @Service
 @Slf4j
 public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IBlogService {
