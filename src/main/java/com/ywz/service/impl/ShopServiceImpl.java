@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywz.dto.Result;
 import com.ywz.entity.Shop;
@@ -12,19 +11,18 @@ import com.ywz.mapper.ShopMapper;
 import com.ywz.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywz.utils.RedisConstants;
-import com.ywz.utils.RedisData;
 import com.ywz.utils.SystemConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -151,11 +149,18 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             return Result.ok(Collections.emptyList());
         }
         List<GeoResult<RedisGeoCommands.GeoLocation<String>>> list = search.getContent();
-        if (list.isEmpty()){
+        if (list.isEmpty()) {
             log.error("list为空");
-            return Result.ok(Collections.emptyList());
+            // 如果list为空，添加商铺信息
+            if( !searchShop()) {
+                return Result.fail("商铺信息为空");
+            }else {
+                // 商铺信息已添加到redis中
+                return queryShopByType(typeId, current, x, y);
+            }
         }
-        if(list.size() <= from){
+        if( from >= list.size()) {
+            log.error("from大于等于list的大小");
             return Result.ok(Collections.emptyList());
         }
         ArrayList<Long> ids = new ArrayList<>(list.size());
@@ -172,6 +177,20 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             shop.setDistance(distanceMap.get(shop.getId().toString()).getValue());
         }
         return Result.ok(shops);
+    }
+
+    private boolean searchShop(){
+        List<Shop> shops = list();
+        if(shops.isEmpty()) {
+            log.error("商铺信息为空");
+            return false;
+        }
+        for (Shop shop : shops) {
+            String key2 = RedisConstants.SHOP_GEO_KEY + shop.getTypeId();
+            Point point = new Point(shop.getX(), shop.getY());
+            stringRedisTemplate.opsForGeo().add(key2,point,shop.getId().toString());
+        }
+        return true;
     }
 
 }
