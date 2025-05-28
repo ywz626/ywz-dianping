@@ -154,6 +154,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     // 这个方法枷锁是防止超卖，但外面已经有一个锁，同一个用户不可能有两个线程执行该方法，所以我把锁去掉了
     // 测试是正确的
     @Transactional
+    @Override
     public void createOrder(VoucherOrder order) {
         Long userId = order.getUserId();
         Long voucherId = order.getVoucherId();
