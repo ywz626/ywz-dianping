@@ -7,7 +7,9 @@ import com.ywz.service.ISeckillVoucherService;
 import com.ywz.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywz.utils.RedisIdWorker;
+import com.ywz.utils.RocketMQProducer;
 import com.ywz.utils.UserHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
@@ -24,6 +26,7 @@ import java.util.concurrent.*;
 
 
 @Service
+@Slf4j
 public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
 
     @Resource
@@ -34,6 +37,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RocketMQProducer rocketMQProducer;
 
     @Resource
     private RedissonClient redisson;
@@ -66,7 +72,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             while (true) {
                 try {
                     VoucherOrder order = orderTasks.take();
-                    VoucherHandler(order);
+                    voucherHandler(order);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -74,7 +80,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
     }
 
-    private void VoucherHandler(VoucherOrder order) {
+    private void voucherHandler(VoucherOrder order) {
         Long userId = order.getUserId();
         RLock redisLock = redisson.getLock("lock:order:" + userId);
         boolean lockStatus = redisLock.tryLock();
@@ -109,8 +115,10 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         voucherOrder.setId(orderId);
         voucherOrder.setVoucherId(voucherId);
         voucherOrder.setUserId(UserHolder.getUser().getId());
-        orderTasks.add(voucherOrder);
-        proxy = (IVoucherOrderService) AopContext.currentProxy();
+//        orderTasks.add(voucherOrder);
+//        proxy = (IVoucherOrderService) AopContext.currentProxy(););
+        // 发送到消息队列
+        rocketMQProducer.asyncSend(voucherOrder);
         return Result.ok(orderId);
     }
 
@@ -153,7 +161,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     // 这个方法枷锁是防止超卖，但外面已经有一个锁，同一个用户不可能有两个线程执行该方法，所以我把锁去掉了
     // 测试是正确的
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createOrder(VoucherOrder order) {
         Long userId = order.getUserId();
         Long voucherId = order.getVoucherId();
@@ -168,5 +177,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                 .gt("stock", 0)
                 .eq("voucher_id", voucherId).update();
         save(order);
+        log.info("创建订单成功，订单id为：{}", order.getId());
     }
 }

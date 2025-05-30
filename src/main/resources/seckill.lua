@@ -16,7 +16,7 @@ if (redis.call('sismember',orderId,userId) == 1) then
     return 2
 end
 
-redis.call('incrby',stockId,-1)
-redis.call('sadd',orderId,userId)
+--redis.call('incrby',stockId,-1)
+--redis.call('sadd',orderId,userId)
 return 0
 
