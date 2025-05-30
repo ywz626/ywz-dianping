@@ -24,7 +24,7 @@ import javax.annotation.Resource;
 @Component
 @Slf4j
 @RocketMQMessageListener(topic = "voucher-order-topic",consumerGroup = "voucher-order-consumer-group")
-public class RocketMQConsumer implements RocketMQListener<String> {
+public class RocketMQ_VoucherConsumer implements RocketMQListener<String> {
 
     @Resource
     private Gson gson;
@@ -55,7 +55,7 @@ public class RocketMQConsumer implements RocketMQListener<String> {
             return;
         }
         try {
-            RocketMQConsumer proxy = (RocketMQConsumer) AopContext.currentProxy();
+            RocketMQ_VoucherConsumer proxy = (RocketMQ_VoucherConsumer) AopContext.currentProxy();
             proxy.createOrder(order);
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
